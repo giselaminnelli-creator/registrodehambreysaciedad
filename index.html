@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horario de las comidas - Registro de hambre/saciedad</title>
+  <style>
+    :root {
+      --primary: #3498db;
+      --primary-dark: #2980b9;
+      --gris-claro: #f8f9fa;
+      --texto: #2c3e50;
+      --verde: #2ecc71;
+      --verde-oscuro: #27ae60;
+      --rojo: #e74c3c;
+      --rojo-oscuro: #c0392b;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f9;
+      color: var(--texto);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 680px;
+      width: 100%;
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      text-align: center;
+      margin-bottom: 8px;
+      color: #1a252f;
+    }
+
+    p.subtitulo {
+      text-align: center;
+      color: #7f8c8d;
+      font-size: 0.95rem;
+      margin-bottom: 25px;
+    }
+
+    .badge-auto-guardado {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: #27ae60;
+      background: #e8f8f5;
+      padding: 6px 12px;
+      border-radius: 20px;
+      width: fit-content;
+      margin: 0 auto 20px auto;
+      border: 1px solid #d4efdf;
+    }
+
+    .bloque {
+      background: var(--gris-claro);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #e9ecef;
+    }
+
+    .bloque-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .bloque-titulo {
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+
+    .horario-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .input-hora {
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.85rem;
+      color: var(--texto);
+      outline: none;
+    }
+
+    .escala-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #555;
+    }
+
+    .opciones-escala {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-escala {
+      flex: 1;
+      min-width: 90px;
+      border: 1px solid #ced4da;
+      padding: 8px 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+      background: white;
+      color: #555;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .btn-escala span.num {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    .btn-escala span.desc {
+      font-size: 0.7rem;
+      font-weight: normal;
+      line-height: 1.1;
+    }
+
+    .btn-escala:hover {
+      background-color: #eef2f7;
+    }
+
+    .btn-escala.activo {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary-dark);
+    }
+
+    .campos-texto {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .input-texto {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: var(--texto);
+      outline: none;
+    }
+
+    .input-texto:focus {
+      border-color: var(--primary);
+    }
+
+    .acciones-contenedor {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-finalizar {
+      flex: 2;
+      background-color: var(--verde);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      min-width: 200px;
+    }
+
+    .btn-finalizar:hover {
+      background-color: var(--verde-oscuro);
+    }
+
+    .btn-reiniciar {
+      flex: 1;
+      background-color: #fceae8;
+      color: var(--rojo);
+      border: 1px solid #f5b7b1;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 140px;
+    }
+
+    .btn-reiniciar:hover {
+      background-color: var(--rojo);
+      color: white;
+    }
+
+    .resumen-contenedor {
+      display: none;
+      margin-top: 25px;
+      padding: 20px;
+      background: #eef2f7;
+      border-radius: 12px;
+      border-left: 5px solid var(--primary);
+    }
+
+    .resumen-titulo {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      color: #1a252f;
+    }
+
+    .resumen-item {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .resumen-item:last-child {
+      margin-bottom: 0;
+    }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #95a5a6;
+      border-top: 1px solid #e9ecef;
+      padding-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Horario de las comidas - Registro de hambre/saciedad</h1>
+  <p class="subtitulo">Selecciona tu nivel de hambre (1 al 5) antes de comenzar a comer y describe tus sensaciones al finalizar.</p>
+
+  <div class="badge-auto-guardado">
+    💾 <span>Tus datos se guardan automáticamente durante el día</span>
+  </div>
+
+  <form id="form-comidas" onsubmit="mostrarResumen(event)">
+
+    <!-- DESAYUNO -->
+    <div class="bloque">
+      <div class="bloque-header">
+        <span class="bloque-titulo">🌅 Desayuno</span>
+        <div class="horario-container">
+          <label for="hora-desayuno">Hora habitual:</label>
+          <input type="time" id="hora-desayuno" class="input-hora" value="08:00" onchange="guardarDatos()">
+        </div>
+      </div>
+      <div class="escala-label">Nivel de hambre / saciedad antes de comer:</div>
+      <div class="opciones-escala">
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'desayuno', '1 - Hambre muy intensa')"><span class="num">1</span><span class="desc">Hambre muy intensa</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'desayuno', '2 - Hambre presente')"><span class="num">2</span><span class="desc">Hambre presente</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'desayuno', '3 - Punto neutro')"><span class="num">3</span><span class="desc">Punto neutro</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'desayuno', '4 - Satisfacción')"><span class="num">4</span><span class="desc">Satisfacción</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'desayuno', '5 - Plenitud elevada')"><span class="num">5</span><span class="desc">Plenitud elevada</span></button>
+      </div>
+      <div class="campos-texto">
+        <input type="text" id="finalizar-desayuno" class="input-texto" placeholder="Sensación al finalizar..." oninput="guardarDatos()">
+      </div>
+    </div>
+
+    <!-- MEDIA MAÑANA -->
+    <div class="bloque">
+      <div class="bloque-header">
+        <span class="bloque-titulo">☕ Media mañana</span>
+        <div class="horario-container">
+          <label for="hora-mediamanana">Hora habitual:</label>
+          <input type="time" id="hora-mediamanana" class="input-hora" value="11:00" onchange="guardarDatos()">
+        </div>
+      </div>
+      <div class="escala-label">Nivel de hambre / saciedad antes de comer:</div>
+      <div class="opciones-escala">
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'mediamanana', '1 - Hambre muy intensa')"><span class="num">1</span><span class="desc">Hambre muy intensa</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'mediamanana', '2 - Hambre presente')"><span class="num">2</span><span class="desc">Hambre presente</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'mediamanana', '3 - Punto neutro')"><span class="num">3</span><span class="desc">Punto neutro</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'mediamanana', '4 - Satisfacción')"><span class="num">4</span><span class="desc">Satisfacción</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'mediamanana', '5 - Plenitud elevada')"><span class="num">5</span><span class="desc">Plenitud elevada</span></button>
+      </div>
+      <div class="campos-texto">
+        <input type="text" id="finalizar-mediamanana" class="input-texto" placeholder="Sensación al finalizar..." oninput="guardarDatos()">
+      </div>
+    </div>
+
+    <!-- COMIDA / ALMUERZO -->
+    <div class="bloque">
+      <div class="bloque-header">
+        <span class="bloque-titulo">☀️ Comida / Almuerzo</span>
+        <div class="horario-container">
+          <label for="hora-comida">Hora habitual:</label>
+          <input type="time" id="hora-comida" class="input-hora" value="14:00" onchange="guardarDatos()">
+        </div>
+      </div>
+      <div class="escala-label">Nivel de hambre / saciedad antes de comer:</div>
+      <div class="opciones-escala">
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'comida', '1 - Hambre muy intensa')"><span class="num">1</span><span class="desc">Hambre muy intensa</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'comida', '2 - Hambre presente')"><span class="num">2</span><span class="desc">Hambre presente</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'comida', '3 - Punto neutro')"><span class="num">3</span><span class="desc">Punto neutro</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'comida', '4 - Satisfacción')"><span class="num">4</span><span class="desc">Satisfacción</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'comida', '5 - Plenitud elevada')"><span class="num">5</span><span class="desc">Plenitud elevada</span></button>
+      </div>
+      <div class="campos-texto">
+        <input type="text" id="finalizar-comida" class="input-texto" placeholder="Sensación al finalizar..." oninput="guardarDatos()">
+      </div>
+    </div>
+
+    <!-- MERIENDA / SNACK -->
+    <div class="bloque">
+      <div class="bloque-header">
+        <span class="bloque-titulo">🌆 Merienda / snack</span>
+        <div class="horario-container">
+          <label for="hora-merienda">Hora habitual:</label>
+          <input type="time" id="hora-merienda" class="input-hora" value="17:30" onchange="guardarDatos()">
+        </div>
+      </div>
+      <div class="escala-label">Nivel de hambre / saciedad antes de comer:</div>
+      <div class="opciones-escala">
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'merienda', '1 - Hambre muy intensa')"><span class="num">1</span><span class="desc">Hambre muy intensa</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'merienda', '2 - Hambre presente')"><span class="num">2</span><span class="desc">Hambre presente</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'merienda', '3 - Punto neutro')"><span class="num">3</span><span class="desc">Punto neutro</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'merienda', '4 - Satisfacción')"><span class="num">4</span><span class="desc">Satisfacción</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'merienda', '5 - Plenitud elevada')"><span class="num">5</span><span class="desc">Plenitud elevada</span></button>
+      </div>
+      <div class="campos-texto">
+        <input type="text" id="finalizar-merienda" class="input-texto" placeholder="Sensación al finalizar..." oninput="guardarDatos()">
+      </div>
+    </div>
+
+    <!-- CENA -->
+    <div class="bloque">
+      <div class="bloque-header">
+        <span class="bloque-titulo">🌙 Cena</span>
+        <div class="horario-container">
+          <label for="hora-cena">Hora habitual:</label>
+          <input type="time" id="hora-cena" class="input-hora" value="21:00" onchange="guardarDatos()">
+        </div>
+      </div>
+      <div class="escala-label">Nivel de hambre / saciedad antes de comer:</div>
+      <div class="opciones-escala">
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'cena', '1 - Hambre muy intensa')"><span class="num">1</span><span class="desc">Hambre muy intensa</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'cena', '2 - Hambre presente')"><span class="num">2</span><span class="desc">Hambre presente</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'cena', '3 - Punto neutro')"><span class="num">3</span><span class="desc">Punto neutro</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'cena', '4 - Satisfacción')"><span class="num">4</span><span class="desc">Satisfacción</span></button>
+        <button type="button" class="btn-escala" onclick="seleccionarEscala(this, 'cena', '5 - Plenitud elevada')"><span class="num">5</span><span class="desc">Plenitud elevada</span></button>
+      </div>
+      <div class="campos-texto">
+        <input type="text" id="finalizar-cena" class="input-texto" placeholder="Sensación al finalizar..." oninput="guardarDatos()">
+      </div>
+    </div>
+
+    <div class="acciones-contenedor">
+      <button type="submit" class="btn-finalizar">📋 Finalizar</button>
+      <button type="button" class="btn-reiniciar" onclick="reiniciarRegistro()">🔄 Nuevo día</button>
+    </div>
+  </form>
+
+  <!-- SECCIÓN DE RESUMEN -->
+  <div id="resumen" class="resumen-contenedor">
+    <div class="resumen-titulo">📊 Resumen del día</div>
+    <div id="resumen-contenido"></div>
+  </div>
+
+  <!-- PIE DE PÁGINA -->
+  <footer>
+    Diseñado por Gisela Minnelli • Todos los derechos reservados
+  </footer>
+</div>
+
+<script>
+  const comidasList = ['desayuno', 'mediamanana', 'comida', 'merienda', 'cena'];
+  let datosEscala = {};
+
+  // Cargar datos al abrir la página
+  window.addEventListener('DOMContentLoaded', () => {
+    cargarDatosGuardados();
+  });
+
+  function seleccionarEscala(boton, comida, valor) {
+    const contenedor = boton.parentElement;
+    const botones = contenedor.querySelectorAll('.btn-escala');
+    
+    botones.forEach(btn => btn.classList.remove('activo'));
+    boton.classList.add('activo');
+    
+    datosEscala[comida] = valor;
+    guardarDatos();
+  }
+
+  function guardarDatos() {
+    const registroData = {
+      escala: datosEscala,
+      horas: {},
+      textos: {}
+    };
+
+    comidasList.forEach(id => {
+      const horaEl = document.getElementById(`hora-${id}`);
+      const textoEl = document.getElementById(`finalizar-${id}`);
+      
+      if (horaEl) registroData.horas[id] = horaEl.value;
+      if (textoEl) registroData.textos[id] = textoEl.value;
+    });
+
+    try {
+      localStorage.setItem('registro_hambre_saciedad', JSON.stringify(registroData));
+    } catch (e) {
+      console.error('No se pudo guardar en localStorage:', e);
+    }
+  }
+
+  function cargarDatosGuardados() {
+    try {
+      const saved = localStorage.getItem('registro_hambre_saciedad');
+      if (!saved) return;
+
+      const registroData = JSON.parse(saved);
+
+      if (registroData.escala) {
+        datosEscala = registroData.escala;
+        Object.keys(datosEscala).forEach(comida => {
+          const val = datosEscala[comida];
+          const contenedor = document.getElementById(`finalizar-${comida}`)?.closest('.bloque');
+          if (contenedor) {
+            const botones = contenedor.querySelectorAll('.btn-escala');
+            botones.forEach(btn => {
+              const numSpan = btn.querySelector('.num');
+              if (numSpan && val.toString().startsWith(numSpan.innerText.trim())) {
+                btn.classList.add('activo');
+              } else {
+                btn.classList.remove('activo');
+              }
+            });
+          }
+        });
+      }
+
+      if (registroData.horas) {
+        Object.keys(registroData.horas).forEach(id => {
+          const horaEl = document.getElementById(`hora-${id}`);
+          if (horaEl && registroData.horas[id]) {
+            horaEl.value = registroData.horas[id];
+          }
+        });
+      }
+
+      if (registroData.textos) {
+        Object.keys(registroData.textos).forEach(id => {
+          const textoEl = document.getElementById(`finalizar-${id}`);
+          if (textoEl && registroData.textos[id] !== undefined) {
+            textoEl.value = registroData.textos[id];
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error al cargar datos de localStorage:', e);
+    }
+  }
+
+  function mostrarResumen(e) {
+    e.preventDefault();
+    
+    const comidas = [
+      { id: 'desayuno', nombre: 'Desayuno' },
+      { id: 'mediamanana', nombre: 'Media mañana' },
+      { id: 'comida', nombre: 'Comida / Almuerzo' },
+      { id: 'merienda', nombre: 'Merienda / snack' },
+      { id: 'cena', nombre: 'Cena' }
+    ];
+
+    const contenedorResumen = document.getElementById('resumen');
+    const contenido = document.getElementById('resumen-contenido');
+    
+    contenido.innerHTML = '';
+
+    comidas.forEach(c => {
+      const hora = document.getElementById(`hora-${c.id}`).value || 'No definida';
+      const escala = datosEscala[c.id] || 'Sin marcar';
+      const finalizar = document.getElementById(`finalizar-${c.id}`).value || 'Sin registro';
+
+      const item = document.createElement('div');
+      item.className = 'resumen-item';
+      item.innerHTML = `
+        <strong>${c.nombre}</strong> (${hora})<br>
+        • Nivel inicial: <b>${escala}</b><br>
+        • Sensación al finalizar: <i>${finalizar}</i>
+      `;
+      contenido.appendChild(item);
+    });
+
+    contenedorResumen.style.display = 'block';
+    contenedorResumen.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function reiniciarRegistro() {
+    datosEscala = {};
+    localStorage.removeItem('registro_hambre_saciedad');
+
+    // Restaurar horarios predeterminados y borrar textos
+    const defaultHours = {
+      desayuno: '08:00',
+      mediamanana: '11:00',
+      comida: '14:00',
+      merienda: '17:30',
+      cena: '21:00'
+    };
+
+    comidasList.forEach(id => {
+      const horaEl = document.getElementById(`hora-${id}`);
+      const textoEl = document.getElementById(`finalizar-${id}`);
+
+      if (horaEl) horaEl.value = defaultHours[id] || '';
+      if (textoEl) textoEl.value = '';
+
+      const contenedor = document.getElementById(`finalizar-${id}`)?.closest('.bloque');
+      if (contenedor) {
+        const botones = contenedor.querySelectorAll('.btn-escala');
+        botones.forEach(btn => btn.classList.remove('activo'));
+      }
+    });
+
+    const contenedorResumen = document.getElementById('resumen');
+    if (contenedorResumen) {
+      contenedorResumen.style.display = 'none';
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>

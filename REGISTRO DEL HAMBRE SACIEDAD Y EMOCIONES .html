@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Hambre, Saciedad y Emociones</title>
+  <!-- jsPDF para generación directa de PDF en formato texto legible -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #1e4d3b;          /* Verde bosque elegante */
+      --primary-hover: #143527;
+      --accent: #d37352;           /* Terracota cálido */
+      --gris-fondo: #fbf9f6;       /* Fondo crema/marfil suave */
+      --gris-tarjeta: #ffffff;
+      --gris-bloque: #f5f2eb;       /* Tono arena muy suave para bloques */
+      --borde: #e3ded5;
+      --texto: #2d3732;
+      --texto-secundario: #6b7570;
+      --verde: #2b7a4b;
+      --verde-hover: #215e3a;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--gris-fondo);
+      color: var(--texto);
+      margin: 0;
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 680px;
+      width: 100%;
+      background: var(--gris-tarjeta);
+      padding: 24px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(30, 77, 59, 0.08);
+      box-sizing: border-box;
+      border: 1px solid var(--borde);
+    }
+
+    h1 {
+      font-size: 1.45rem;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 4px;
+      color: var(--primary);
+      font-family: Georgia, serif;
+    }
+
+    .badge-dia {
+      text-align: center;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+      background: #fdf3f0;
+      display: block;
+      padding: 4px 18px;
+      border-radius: 16px;
+      margin-left: auto;
+      margin-right: auto;
+      width: fit-content;
+      border: 1px solid #f2cfc7;
+    }
+
+    p.subtitulo {
+      text-align: center;
+      color: var(--texto-secundario);
+      font-size: 0.88rem;
+      margin-top: 0;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .bloque {
+      background: var(--gris-bloque);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--borde);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+      transition: all 0.2s ease;
+    }
+
+    .bloque:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(211, 115, 82, 0.06);
+    }
+
+    .bloque-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-bottom: 1px solid #e8e3d8;
+      padding-bottom: 8px;
+    }
+
+    .bloque-titulo {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--primary);
+    }
+
+    .horario-container {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.82rem;
+      color: var(--texto-secundario);
+      background: #ffffff;
+      padding: 3px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--borde);
+    }
+
+    .select-time-part {
+      border: none;
+      font-size: 0.85rem;
+      color: var(--texto);
+      outline: none;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .seccion-campo {
+      margin-bottom: 10px;
+    }
+
+    .seccion-campo:last-child {
+      margin-bottom: 0;
+    }
+
+    .label-seccion {
+      font-size: 0.81rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      color: var(--primary);
+      display: block;
+    }
+
+    /* Grillas apiladas originales pero más compactas */
+    .grid-opciones {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 5px;
+    }
+
+    .opcion-btn {
+      background: #ffffff;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.79rem;
+      color: var(--texto);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      user-select: none;
+      font-weight: 500;
+    }
+
+    .opcion-btn:hover {
+      border-color: var(--accent);
+      background: #fdf3f0;
+      color: var(--accent);
+    }
+
+    .opcion-btn.selected {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(30, 77, 59, 0.2);
+    }
+
+    .dot-rojo { color: #e74c3c; font-size: 0.9rem; }
+    .dot-amarillo { color: #f39c12; font-size: 0.9rem; }
+    .dot-verde { color: #27ae60; font-size: 0.9rem; }
+
+    .opcion-btn.selected .dot-rojo,
+    .opcion-btn.selected .dot-amarillo,
+    .opcion-btn.selected .dot-verde {
+      color: #ffffff;
+    }
+
+    .acciones {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 22px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .btn-accion {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(30, 77, 59, 0.15);
+    }
+
+    .btn-accion:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-accion.btn-guardar {
+      background: var(--accent);
+      box-shadow: 0 4px 10px rgba(211, 115, 82, 0.2);
+    }
+
+    .btn-accion.btn-guardar:hover {
+      background: #bd6242;
+    }
+
+    .btn-accion.btn-secundario {
+      background: #8c9691;
+    }
+
+    .btn-accion.btn-secundario:hover {
+      background: #6e7773;
+    }
+
+    .footer-derechos {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--texto-secundario);
+      border-top: 1px solid var(--borde);
+      padding-top: 14px;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="registro-container">
+    <h1>Registro de Hambre, Saciedad y Emociones</h1>
+    <div class="badge-dia" id="titulo-dia">Día 1 de 4</div>
+    <p class="subtitulo">Registra tus sensaciones físicas y emocionales en cada comida para conectar con las señales de tu cuerpo.</p>
+
+    <!-- Bloques de Comida -->
+    <div id="bloques-comidas"></div>
+
+    <!-- Botones de Navegación y Acción -->
+    <div class="acciones" id="seccion-acciones">
+      <button class="btn-accion btn-secundario" id="btn-anterior" onclick="anteriorDia()" style="display: none;">Día Anterior</button>
+      <button class="btn-accion" id="btn-siguiente" onclick="siguienteDia()">Siguiente Día</button>
+      <button class="btn-accion btn-guardar" id="btn-finalizar" onclick="finalizarYDescargar()" style="display: none;">Finalizar y Descargar PDF</button>
+    </div>
+
+    <!-- Pie de página con derechos de autor -->
+    <div class="footer-derechos">
+      (c) Todos los derechos reservados - Gisela Minnelli
+    </div>
+  </div>
+
+  <script>
+    const comidas = [
+      'Desayuno',
+      'Media Mañana',
+      'Almuerzo',
+      'Merienda',
+      'Cena',
+      'Snack Extra 1',
+      'Snack Extra 2'
+    ];
+
+    const opcionesHambreFisica = [
+      { label: 'Intensa', symbol: '●', class: 'dot-rojo' },
+      { label: 'Presente', symbol: '●', class: 'dot-amarillo' },
+      { label: 'Neutro', symbol: '●', class: 'dot-verde' }
+    ];
+
+    const opcionesEmociones = [
+      'Calma', 'Ansiedad', 'Estres', 'Cansancio',
+      'Aburrimiento', 'Tristeza', 'Alegria', 'Prisa'
+    ];
+
+    const opcionesSaciedad = [
+      'Pleno', 'Satisfecho', 'Ligero'
+    ];
+
+    // Generar opciones de Horas (00 a 23)
+    function generarOpcionesHoras24() {
+      let opciones = ['<option value="">HH</option>'];
+      for (let h = 0; h < 24; h++) {
+        let val = h < 10 ? '0' + h : '' + h;
+        opciones.push('<option value="' + val + '">' + val + '</option>');
+      }
+      return opciones.join('');
+    }
+
+    // Generar opciones de Minutos (00 a 59 de 1 en 1)
+    function generarOpcionesMinutos() {
+      let opciones = ['<option value="">MM</option>'];
+      for (let m = 0; m < 60; m++) {
+        let val = m < 10 ? '0' + m : '' + m;
+        opciones.push('<option value="' + val + '">' + val + '</option>');
+      }
+      return opciones.join('');
+    }
+
+    const opcionesHorasHtml = generarOpcionesHoras24();
+    const opcionesMinutosHtml = generarOpcionesMinutos();
+
+    // Recuperar datos y última página activa guardados en LocalStorage
+    let datosRegistro = JSON.parse(localStorage.getItem('registro_hambre_saciedad_datos')) || {};
+    let diaActual = parseInt(localStorage.getItem('registro_hambre_saciedad_dia')) || 1;
+    if (diaActual < 1 || diaActual > 4) diaActual = 1;
+
+    function renderizarBloques() {
+      const contenedor = document.getElementById('bloques-comidas');
+      contenedor.innerHTML = '';
+
+      comidas.forEach((comida, idx) => {
+        const keyBase = 'dia_' + diaActual + '_comida_' + idx;
+        const horaVal = datosRegistro[keyBase + '_hora'] || '';
+        const [hhVal, mmVal] = horaVal.includes(':') ? horaVal.split(':') : ['', ''];
+        
+        const hambreVal = datosRegistro[keyBase + '_hambre'] || '';
+        const emocionVal = datosRegistro[keyBase + '_emocion'] || '';
+        const saciedadVal = datosRegistro[keyBase + '_saciedad'] || '';
+
+        const bloqueHtml = `
+          <div class="bloque">
+            <div class="bloque-header">
+              <span class="bloque-titulo">${comida}</span>
+              <div class="horario-container">
+                <label>Hora:</label>
+                <select id="${keyBase}_hh" class="select-time-part" onchange="actualizarHoraCombinada('${keyBase}')">
+                  ${opcionesHorasHtml}
+                </select>
+                <span>:</span>
+                <select id="${keyBase}_mm" class="select-time-part" onchange="actualizarHoraCombinada('${keyBase}')">
+                  ${opcionesMinutosHtml}
+                </select>
+              </div>
+            </div>
+
+            <!-- Hambre Física -->
+            <div class="seccion-campo">
+              <span class="label-seccion">Hambre física antes de comer:</span>
+              <div class="grid-opciones">
+                ${opcionesHambreFisica.map(opc => `
+                  <div class="opcion-btn ${hambreVal === opc.label ? 'selected' : ''}" onclick="seleccionarOpcion('${keyBase}_hambre', '${opc.label}', this)">
+                    <span class="${opc.class}">${opc.symbol}</span> ${opc.label}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Emoción antes de comer -->
+            <div class="seccion-campo">
+              <span class="label-seccion">Emoción antes de comer:</span>
+              <div class="grid-opciones">
+                ${opcionesEmociones.map(opc => `
+                  <div class="opcion-btn ${emocionVal === opc ? 'selected' : ''}" onclick="seleccionarOpcion('${keyBase}_emocion', '${opc}', this)">
+                    ${opc}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Saciedad -->
+            <div class="seccion-campo">
+              <span class="label-seccion">Saciedad después de comer:</span>
+              <div class="grid-opciones">
+                ${opcionesSaciedad.map(opc => `
+                  <div class="opcion-btn ${saciedadVal === opc ? 'selected' : ''}" onclick="seleccionarOpcion('${keyBase}_saciedad', '${opc}', this)">
+                    ${opc}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+        contenedor.innerHTML += bloqueHtml;
+
+        // Asignar horas y minutos guardados
+        setTimeout(() => {
+          const selHH = document.getElementById(keyBase + '_hh');
+          const selMM = document.getElementById(keyBase + '_mm');
+          if (selHH && hhVal) selHH.value = hhVal;
+          if (selMM && mmVal) selMM.value = mmVal;
+        }, 0);
+      });
+    }
+
+    function actualizarHoraCombinada(keyBase) {
+      const hh = document.getElementById(keyBase + '_hh').value;
+      const mm = document.getElementById(keyBase + '_mm').value;
+      
+      if (hh !== '' && mm !== '') {
+        datosRegistro[keyBase + '_hora'] = hh + ':' + mm;
+      } else if (hh !== '') {
+        datosRegistro[keyBase + '_hora'] = hh + ':00';
+      } else {
+        delete datosRegistro[keyBase + '_hora'];
+      }
+      autoGuardar();
+    }
+
+    function seleccionarOpcion(clave, valor, elemento) {
+      const parent = elemento.parentElement;
+      const btns = parent.querySelectorAll('.opcion-btn');
+      
+      if (elemento.classList.contains('selected')) {
+        elemento.classList.remove('selected');
+        delete datosRegistro[clave];
+      } else {
+        btns.forEach(btn => btn.classList.remove('selected'));
+        elemento.classList.add('selected');
+        datosRegistro[clave] = valor;
+      }
+      autoGuardar();
+    }
+
+    function autoGuardar() {
+      localStorage.setItem('registro_hambre_saciedad_datos', JSON.stringify(datosRegistro));
+      localStorage.setItem('registro_hambre_saciedad_dia', diaActual);
+    }
+
+    function actualizarNavegacion() {
+      document.getElementById('titulo-dia').innerText = 'Día ' + diaActual + ' de 4';
+      
+      const btnAnterior = document.getElementById('btn-anterior');
+      const btnSiguiente = document.getElementById('btn-siguiente');
+      const btnFinalizar = document.getElementById('btn-finalizar');
+
+      btnAnterior.style.display = diaActual > 1 ? 'inline-flex' : 'none';
+
+      if (diaActual === 4) {
+        btnSiguiente.style.display = 'none';
+        btnFinalizar.style.display = 'inline-flex';
+      } else {
+        btnSiguiente.style.display = 'inline-flex';
+        btnFinalizar.style.display = 'none';
+      }
+
+      renderizarBloques();
+      autoGuardar();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function siguienteDia() {
+      if (diaActual < 4) {
+        diaActual++;
+        actualizarNavegacion();
+      }
+    }
+
+    function anteriorDia() {
+      if (diaActual > 1) {
+        diaActual--;
+        actualizarNavegacion();
+      }
+    }
+
+    function limpiarTextoParaPDF(texto) {
+      if (!texto) return 'Sin registrar';
+      return texto
+        .replace(/á/g, 'a')
+        .replace(/é/g, 'e')
+        .replace(/í/g, 'i')
+        .replace(/ó/g, 'o')
+        .replace(/ú/g, 'u')
+        .replace(/Á/g, 'A')
+        .replace(/É/g, 'E')
+        .replace(/Í/g, 'I')
+        .replace(/Ó/g, 'O')
+        .replace(/Ú/g, 'U')
+        .replace(/ñ/g, 'n')
+        .replace(/Ñ/g, 'N')
+        .replace(/[^\x00-\x7F]/g, '')
+        .trim();
+    }
+
+    function finalizarYDescargar() {
+      autoGuardar();
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+      
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentWidth = pageWidth - (margin * 2);
+
+      const nombresComidasClean = [
+        'Desayuno',
+        'Media Manana',
+        'Almuerzo',
+        'Merienda',
+        'Cena',
+        'Snack Extra 1',
+        'Snack Extra 2'
+      ];
+
+      for (let day = 1; day <= 4; day++) {
+        if (day > 1) doc.addPage();
+
+        let y = 16;
+
+        // Encabezado del Día (Color Verde Bosque)
+        doc.setFillColor(30, 77, 59);
+        doc.roundedRect(margin, y, contentWidth, 14, 2, 2, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('REGISTRO DE HAMBRE, SACIEDAD Y EMOCIONES - DIA ' + day + ' DE 4', pageWidth / 2, y + 9, { align: 'center' });
+
+        y += 18;
+
+        nombresComidasClean.forEach((comidaNombre, idx) => {
+          const keyBase = 'dia_' + day + '_comida_' + idx;
+          const horaVal = datosRegistro[keyBase + '_hora'] || 'Sin registrar';
+          const hambreVal = limpiarTextoParaPDF(datosRegistro[keyBase + '_hambre']);
+          const emocionVal = limpiarTextoParaPDF(datosRegistro[keyBase + '_emocion']);
+          const saciedadVal = limpiarTextoParaPDF(datosRegistro[keyBase + '_saciedad']);
+
+          // Caja de Comida (Fondo arena suave)
+          doc.setFillColor(245, 242, 235);
+          doc.setDrawColor(227, 222, 213);
+          doc.roundedRect(margin, y, contentWidth, 29, 2, 2, 'FD');
+
+          // Título de la Comida
+          doc.setTextColor(30, 77, 59);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9.5);
+          doc.text(comidaNombre.toUpperCase(), margin + 4, y + 5.5);
+
+          // Hora (Formato 24h)
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(107, 117, 112);
+          doc.text('Hora: ' + horaVal, margin + contentWidth - 4, y + 5.5, { align: 'right' });
+
+          // Línea separadora suave
+          doc.setDrawColor(227, 222, 213);
+          doc.setLineWidth(0.2);
+          doc.line(margin + 4, y + 7.5, margin + contentWidth - 4, y + 7.5);
+
+          // Detalles registrados
+          doc.setFontSize(8.5);
+          doc.setTextColor(45, 55, 50);
+          
+          doc.setFont('helvetica', 'bold');
+          doc.text('- Hambre fisica: ', margin + 4, y + 13);
+          doc.setFont('helvetica', 'normal');
+          doc.text(hambreVal, margin + 32, y + 13);
+
+          doc.setFont('helvetica', 'bold');
+          doc.text('- Emocion previa: ', margin + 4, y + 18);
+          doc.setFont('helvetica', 'normal');
+          doc.text(emocionVal, margin + 32, y + 18);
+
+          doc.setFont('helvetica', 'bold');
+          doc.text('- Saciedad posterior: ', margin + 4, y + 23);
+          doc.setFont('helvetica', 'normal');
+          doc.text(saciedadVal, margin + 35, y + 23);
+
+          y += 32;
+        });
+
+        // Pie de página limpio con derechos de autor
+        doc.setFontSize(8);
+        doc.setTextColor(107, 117, 112);
+        doc.text('Pagina ' + day + ' de 4 - (c) Todos los derechos reservados - Gisela Minnelli', pageWidth / 2, pageHeight - 8, { align: 'center' });
+      }
+
+      doc.save('Registro_Hambre_Saciedad_Resumen.pdf');
+    }
+
+    // Inicializar la vista cargando exactamente el último estado guardado
+    actualizarNavegacion();
+  </script>
+</body>
+</html>
